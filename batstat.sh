@@ -9,6 +9,11 @@ function get_battery_info {
     fi
 }
 
+# returns $1 wrapped between $2 and "\e[0m" (clear color)
+function add_color {
+    printf "${2}${1}\e[0m"
+}
+
 # get battery info
 energy_now=$(get_battery_info "energy_now")
 energy_full=$(get_battery_info "energy_full")
@@ -16,43 +21,41 @@ power_now=$(get_battery_info "power_now")
 ac_status=$(get_battery_info "status")
 
 # calculate remaining battery power percentage, and discharge rate in Watts
-battery_percent=$(bc<<< "scale=2; $energy_now * 100 / $energy_full")
-discharge_rate=$(bc<<< "scale=1; $power_now / 1000000")
+bat_pct=$(bc<<< "scale=2; $energy_now * 100 / $energy_full")
+bat_pct_int=${bat_pct%.*}
+rate=$(bc<<< "scale=1; $power_now / 1000000")
+rate_int=${rate%.*}
 
-# set cool colors
-color_clear="\e[0m"
-
-# first for battery percentage
-color_pct="\e[32m"      # green
 # %.* means remove suffix of the form .*, so that
 # we get integer values that are valid for bash arithmetic
-if [[ ${battery_percent%.*} -lt "15" ]]; then
+if [[ "$bat_pct_int" -lt "15" ]]; then
     color_pct="\e[31m"  # red
-elif [[ ${battery_percent%.*} -lt "30" ]]; then
+elif [[ "$bat_pct_int" -lt "30" ]]; then
     color_pct="\e[33m"  # brown
+else
+    color_pct="\e[32m" # green
 fi
 
 # then for {,dis}charge rate, add colors + sign
 # NOTE : status can be one of Charging, Discharging or Unknown
-if [[ $ac_status == "Charging" ]]; then
+if [[ "$ac_status" == "Charging" ]]; then
     color_rate="\e[32m" # green
-    discharge_rate="+${discharge_rate}"
+    rate="+${rate}" # add plus sign
 elif [[ "$ac_status" == "Discharging" ]]; then
-    discharge_rate_int="${discharge_rate%.*}"
-    echo "Discharge rate (int): ${discharge_rate_int}"
+    echo "Discharge rate (int): ${rate_int}"
     # add colors depending on how much drain there is on the battery
-    if [[ "$discharge_rate_int" -lt "5" ]]; then
+    if [[ "$rate_int" -lt "5" ]]; then
         color_rate="\e[32m" # green
-    elif [[ "$discharge_rate_int" -lt "10" ]] && [[ "$discharge_rate_int" >=5 ]]; then
+    elif [[ "$rate_int" -lt "10" ]]; then
         color_rate="\e[33m" # brown
     else
         color_rate="\e[31m" # red
     fi
-    discharge_rate="-$discharge_rate"
+    rate="-$rate" # add minus sign
 else # Unknown
     color_rate="\e[34m" # blue
-    discharge_rate="?$discharge_rate"
+    rate="?$rate" # indicate unknown status
 fi
 
 # display formatted result
-echo -e "Battery : ${color_pct}${battery_percent}${color_clear}%, ${color_rate}${discharge_rate}${color_clear}W"
+echo -e "Battery : $(add_color $bat_pct $color_pct)%, $(add_color $rate $color_rate)W"
