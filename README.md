@@ -1,5 +1,4 @@
-`batstat`
-=====
-`batstat` is a simple bash script that allows the user to display battery status in the terminal. Work in progress.
+# `batstat` 
 
-Might require filepath adjustments for your machines. The script is very short anyways.
+Simple script that displays battery percentage and {dis,}charge rate.
+
