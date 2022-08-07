@@ -12,6 +12,9 @@ function die_usage {
   -f FORMAT        Use the specified output format for colors.
                    FORMAT must be one of 'ansi' or 'xml'
                    (default: ansi).
+  -b               Print battery percentage only (incompatible
+                   with -w)
+  -w               Print wattage only (incompatible with -b)
 "
     exit 2
 }
@@ -66,7 +69,9 @@ function format {
 # process positional parameters
 OPT_NO_NEWLINE="false"
 OPT_FORMAT="ansi"
-while getopts ":nf:" CUR_OPT; [[ "$?" == "0" ]]; do
+OPT_BAT_ONLY="false"
+OPT_WATT_ONLY="false"
+while getopts ":nf:wb" CUR_OPT; [[ "$?" == "0" ]]; do
     if [[ "${CUR_OPT}" == "?" ]]; then
         # illegal option
         die_usage
@@ -90,6 +95,16 @@ while getopts ":nf:" CUR_OPT; [[ "$?" == "0" ]]; do
                     ;;
             esac
             ;;
+        w)
+            [[ "${OPT_BAT_ONLY}" == "false" ]] || die_usage
+            OPT_WATT_ONLY="true"
+            ;;
+        b)
+            [[ "${OPT_WATT_ONLY}" == "false" ]] || die_usage
+            OPT_BAT_ONLY="true"
+            ;;
+        # no need for *) case because illegal options are checked
+        # above
     esac
 done
 
@@ -139,7 +154,10 @@ fi
 
 # display formatted result
 [[ "${OPT_FORMAT}" == "xml" ]] && printf "<txt>"
-printf "$(format ${BAT_PCT} ${COLOR_PCT})%%, "
-printf "$(format ${RATE} ${COLOR_RATE})W"
+[[ "${OPT_WATT_ONLY}" == "false" ]] && printf "$(format ${BAT_PCT} ${COLOR_PCT})%%"
+if [[ "${OPT_BAT_ONLY}" == "false" ]] && [[ "${OPT_WATT_ONLY}" == "false" ]]; then
+    printf ", "
+fi
+[[ "${OPT_BAT_ONLY}" == "false" ]] && printf "$(format ${RATE} ${COLOR_RATE})W"
 [[ "${OPT_FORMAT}" == "xml" ]] && printf "</txt>"
 [[ "${OPT_NO_NEWLINE}" == "false" ]] && printf "\n"
