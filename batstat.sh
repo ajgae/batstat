@@ -1,15 +1,11 @@
 #!/bin/bash
-set -euo pipefail
-
-# Options:
-# -n: don't append newline to output
-# -f: format type (default 'ansi', one of 'xml' or 'ansi')
 
 # exit immediately on non-zero exit of pipeline, list or compound
 # command, on unset variable, or during a pipeline if one of the
 # command files
+set -euo pipefail
 
-function usage {
+function die_usage {
     printf "Usage: batstat [-n] [-f FORMAT]
   -n               Do not append a newline to the output
                    (which is the default behavior)
@@ -17,6 +13,7 @@ function usage {
                    FORMAT must be one of 'ansi' or 'xml'
                    (default: ansi).
 "
+    exit 2
 }
 
 # prints contents of file $1 found in directory $2
@@ -26,30 +23,28 @@ function get_battery_info {
     fi
 }
 
-# $1 = string, $2 = color (one of
-# 'red', 'green', 'brown' or 'blue')
+# $1 = string, $2 = color (one of 'red', 'green', 'brown' or 'blue')
 function format {
+    local COLOR
     case "$2" in
         red)
-            [[ "${OPT_FORMAT}" =~  "ansi" ]] && local COLOR="\e[31m"
-            [[ "${OPT_FORMAT}" =~ "xml" ]] && local COLOR="Red"
+            [[ "${OPT_FORMAT}" =~  "ansi" ]] && COLOR="\e[31m"
+            [[ "${OPT_FORMAT}" =~ "xml" ]] && COLOR="Red"
             ;;
         green)
-            [[ "${OPT_FORMAT}" =~ "ansi" ]] && local COLOR="\e[32m"
-            [[ "${OPT_FORMAT}" =~ "xml" ]] && local COLOR="Green"
+            [[ "${OPT_FORMAT}" =~ "ansi" ]] && COLOR="\e[32m"
+            [[ "${OPT_FORMAT}" =~ "xml" ]] && COLOR="Green"
             ;;
         brown)
-            [[ "${OPT_FORMAT}" =~ "ansi" ]] && local COLOR="\e[33m"
-            [[ "${OPT_FORMAT}" =~ "xml" ]] && local COLOR="Brown"
+            [[ "${OPT_FORMAT}" =~ "ansi" ]] && COLOR="\e[33m"
+            [[ "${OPT_FORMAT}" =~ "xml" ]] && COLOR="Brown"
             ;;
         blue)
-            [[ "${OPT_FORMAT}" =~ "ansi" ]] && local COLOR="\e[34m"
-            [[ "${OPT_FORMAT}" =~ "xml" ]] && local COLOR="Blue"
+            [[ "${OPT_FORMAT}" =~ "ansi" ]] && COLOR="\e[34m"
+            [[ "${OPT_FORMAT}" =~ "xml" ]] && COLOR="Blue"
             ;;
         *)
             printf "Internal error (format): unknown color name '%s', exiting\n" "$2"
-            # don't print usage, colors are internal to the script and
-            # not yet customizable
             exit 1
             ;;
     esac
@@ -74,10 +69,10 @@ OPT_FORMAT="ansi"
 while getopts ":nf:" CUR_OPT; [[ "$?" == "0" ]]; do
     if [[ "${CUR_OPT}" == "?" ]]; then
         # illegal option
-        usage
-        exit 1
+        die_usage
     fi
-    printf "${CUR_OPT}: ${OPTARG:-<nothing>}\n"
+    # for debugging
+    #printf "${CUR_OPT}: ${OPTARG:-<nothing>}\n"
     case ${CUR_OPT} in
         n)
             OPT_NO_NEWLINE="true"
@@ -91,8 +86,7 @@ while getopts ":nf:" CUR_OPT; [[ "$?" == "0" ]]; do
                     OPT_FORMAT="xml"
                     ;;
                 *)
-                    usage
-                    exit 1
+                    die_usage
                     ;;
             esac
             ;;
