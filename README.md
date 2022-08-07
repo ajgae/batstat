@@ -11,5 +11,7 @@ Command-line options:
 - `-b`: Print battery percentage only (incompatible with -w)
 - `-w`: Print wattage only (incompatible with -b)
 - `-f FORMAT`: Use the specified output format for colors. FORMAT must
-  be one of 'ansi' or 'xml' (default: 'ansi')
+  be one of 'ansi' or 'xml' (default: 'ansi'). 'xfce-genmon' is
+  intended for use with the Xfce4 panel general monitor plugin (see
+  https://docs.xfce.org/panel-plugins/xfce4-genmon-plugin/)
 

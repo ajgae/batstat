@@ -13,8 +13,10 @@ function die_usage {
                    with -w)
   -w               Print wattage only (incompatible with -b)
   -f FORMAT        Use the specified output format for colors.
-                   FORMAT must be one of 'ansi' or 'xml'
-                   (default: 'ansi')
+                   FORMAT must be one of 'ansi' or 'xfce-genmon'
+                   (default: 'ansi'). 'xfce-genmon' is intended
+                   for use with the Xfce4 panel general monitor
+                   plugin (see https://docs.xfce.org/panel-plugins/xfce4-genmon-plugin/)
 "
     exit 2
 }
@@ -32,19 +34,19 @@ function format {
     case "$2" in
         red)
             [[ "${OPT_FORMAT}" =~  "ansi" ]] && COLOR="\e[31m"
-            [[ "${OPT_FORMAT}" =~ "xml" ]] && COLOR="Red"
+            [[ "${OPT_FORMAT}" =~ "xfce-genmon" ]] && COLOR="Red"
             ;;
         green)
             [[ "${OPT_FORMAT}" =~ "ansi" ]] && COLOR="\e[32m"
-            [[ "${OPT_FORMAT}" =~ "xml" ]] && COLOR="Green"
+            [[ "${OPT_FORMAT}" =~ "xfce-genmon" ]] && COLOR="Green"
             ;;
         brown)
             [[ "${OPT_FORMAT}" =~ "ansi" ]] && COLOR="\e[33m"
-            [[ "${OPT_FORMAT}" =~ "xml" ]] && COLOR="Brown"
+            [[ "${OPT_FORMAT}" =~ "xfce-genmon" ]] && COLOR="Brown"
             ;;
         blue)
             [[ "${OPT_FORMAT}" =~ "ansi" ]] && COLOR="\e[34m"
-            [[ "${OPT_FORMAT}" =~ "xml" ]] && COLOR="Blue"
+            [[ "${OPT_FORMAT}" =~ "xfce-genmon" ]] && COLOR="Blue"
             ;;
         *)
             printf "Internal error (format): unknown color name '%s', exiting\n" "$2"
@@ -56,7 +58,7 @@ function format {
         ansi)
             printf "${COLOR}${1}\e[0m"
             ;;
-        xml)
+        xfce-genmon)
             printf "<span foreground=\"${COLOR}\">${1}</span>"
             ;;
         *)
@@ -95,8 +97,8 @@ while getopts ":nf:wb" CUR_OPT; [[ "$?" == "0" ]]; do
                 ansi)
                     OPT_FORMAT="ansi"
                     ;;
-                xml)
-                    OPT_FORMAT="xml"
+                xfce-genmon)
+                    OPT_FORMAT="xfce-genmon"
                     ;;
                 *)
                     die_usage
@@ -153,11 +155,11 @@ else # Unknown
 fi
 
 # display formatted result
-[[ "${OPT_FORMAT}" == "xml" ]] && printf "<txt>"
+[[ "${OPT_FORMAT}" == "xfce-genmon" ]] && printf "<txt>"
 [[ "${OPT_WATT_ONLY}" == "false" ]] && printf "$(format ${BAT_PCT} ${COLOR_PCT})%%"
 if [[ "${OPT_BAT_ONLY}" == "false" ]] && [[ "${OPT_WATT_ONLY}" == "false" ]]; then
     printf ", "
 fi
 [[ "${OPT_BAT_ONLY}" == "false" ]] && printf "$(format ${RATE} ${COLOR_RATE})W"
-[[ "${OPT_FORMAT}" == "xml" ]] && printf "</txt>"
+[[ "${OPT_FORMAT}" == "xfce-genmon" ]] && printf "</txt>"
 [[ "${OPT_NO_NEWLINE}" == "false" ]] && printf "\n"
