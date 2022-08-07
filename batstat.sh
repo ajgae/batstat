@@ -6,15 +6,15 @@
 set -euo pipefail
 
 function die_usage {
-    printf "Usage: batstat [-n] [-f FORMAT]
+    printf "Usage: batstat [-nbw] [-f FORMAT]
   -n               Do not append a newline to the output
                    (which is the default behavior)
-  -f FORMAT        Use the specified output format for colors.
-                   FORMAT must be one of 'ansi' or 'xml'
-                   (default: ansi).
   -b               Print battery percentage only (incompatible
                    with -w)
   -w               Print wattage only (incompatible with -b)
+  -f FORMAT        Use the specified output format for colors.
+                   FORMAT must be one of 'ansi' or 'xml'
+                   (default: 'ansi')
 "
     exit 2
 }
@@ -82,6 +82,14 @@ while getopts ":nf:wb" CUR_OPT; [[ "$?" == "0" ]]; do
         n)
             OPT_NO_NEWLINE="true"
             ;;
+        w)
+            [[ "${OPT_BAT_ONLY}" == "false" ]] || die_usage
+            OPT_WATT_ONLY="true"
+            ;;
+        b)
+            [[ "${OPT_WATT_ONLY}" == "false" ]] || die_usage
+            OPT_BAT_ONLY="true"
+            ;;
         f)
             case ${OPTARG} in
                 ansi)
@@ -94,14 +102,6 @@ while getopts ":nf:wb" CUR_OPT; [[ "$?" == "0" ]]; do
                     die_usage
                     ;;
             esac
-            ;;
-        w)
-            [[ "${OPT_BAT_ONLY}" == "false" ]] || die_usage
-            OPT_WATT_ONLY="true"
-            ;;
-        b)
-            [[ "${OPT_WATT_ONLY}" == "false" ]] || die_usage
-            OPT_BAT_ONLY="true"
             ;;
         # no need for *) case because illegal options are checked
         # above
