@@ -10,8 +10,13 @@ set -euo pipefail
 # command files
 
 function usage {
-    printf "hello
-world\n"
+    printf "Usage: batstat [-n] [-f FORMAT]
+  -n               Do not append a newline to the output
+                   (which is the default behavior)
+  -f FORMAT        Use the specified output format for colors.
+                   FORMAT must be one of 'ansi' or 'xml'
+                   (default: ansi).
+"
 }
 
 # prints contents of file $1 found in directory $2
@@ -68,7 +73,7 @@ OPT_NO_NEWLINE="false"
 OPT_FORMAT="ansi"
 while getopts ":nf:" CUR_OPT; [[ "$?" == "0" ]]; do
     if [[ "${CUR_OPT}" == "?" ]]; then
-        printf "illegal option: ${CUR_OPT}, exiting\n"
+        # illegal option
         usage
         exit 1
     fi
@@ -86,7 +91,6 @@ while getopts ":nf:" CUR_OPT; [[ "$?" == "0" ]]; do
                     OPT_FORMAT="xml"
                     ;;
                 *)
-                    printf "unknown format type: ${OPTARG}, exiting\n"
                     usage
                     exit 1
                     ;;
