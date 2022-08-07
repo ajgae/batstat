@@ -21,35 +21,35 @@ function get_battery_info {
     fi
 }
 
-# $1 = string, $2 = format type (one of 'ansi' or 'xml'), $3 = color (one of
+# $1 = string, $2 = color (one of
 # 'red', 'green', 'brown' or 'blue')
 function format {
-    case "$3" in
+    case "$2" in
         red)
-            [[ "$2" =~  "ansi" ]] && local COLOR="\e[31m"
-            [[ "$2" =~ "xml" ]] && local COLOR="Red"
+            [[ "${OPT_FORMAT}" =~  "ansi" ]] && local COLOR="\e[31m"
+            [[ "${OPT_FORMAT}" =~ "xml" ]] && local COLOR="Red"
             ;;
         green)
-            [[ "$2" =~ "ansi" ]] && local COLOR="\e[32m"
-            [[ "$2" =~ "xml" ]] && local COLOR="Green"
+            [[ "${OPT_FORMAT}" =~ "ansi" ]] && local COLOR="\e[32m"
+            [[ "${OPT_FORMAT}" =~ "xml" ]] && local COLOR="Green"
             ;;
         brown)
-            [[ "$2" =~ "ansi" ]] && local COLOR="\e[33m"
-            [[ "$2" =~ "xml" ]] && local COLOR="Brown"
+            [[ "${OPT_FORMAT}" =~ "ansi" ]] && local COLOR="\e[33m"
+            [[ "${OPT_FORMAT}" =~ "xml" ]] && local COLOR="Brown"
             ;;
         blue)
-            [[ "$2" =~ "ansi" ]] && local COLOR="\e[34m"
-            [[ "$2" =~ "xml" ]] && local COLOR="Blue"
+            [[ "${OPT_FORMAT}" =~ "ansi" ]] && local COLOR="\e[34m"
+            [[ "${OPT_FORMAT}" =~ "xml" ]] && local COLOR="Blue"
             ;;
         *)
-            printf "Error: unknown color name '%s' (format), exiting\n" "$3"
+            printf "Internal error (format): unknown color name '%s', exiting\n" "$2"
             # don't print usage, colors are internal to the script and
             # not yet customizable
             exit 1
             ;;
     esac
 
-    case "$2" in
+    case "${OPT_FORMAT}" in
         ansi)
             printf "${COLOR}${1}\e[0m"
             ;;
@@ -57,8 +57,7 @@ function format {
             printf "<span foreground=\"${COLOR}\">${1}</span>"
             ;;
         *)
-            printf "Error (format): unknown format name '%s' (format), exiting\n" "$2"
-            usage
+            printf "Internal error (format): unkwown format type '%s', exiting\n" "${OPT_FORMAT}"
             exit 1
             ;;
     esac
@@ -79,7 +78,19 @@ while getopts ":nf:" CUR_OPT; [[ "$?" == "0" ]]; do
             OPT_NO_NEWLINE="true"
             ;;
         f)
-            OPT_FORMAT="${OPTARG}"
+            case ${OPTARG} in
+                ansi)
+                    OPT_FORMAT="ansi"
+                    ;;
+                xml)
+                    OPT_FORMAT="xml"
+                    ;;
+                *)
+                    printf "unknown format type: ${OPTARG}, exiting\n"
+                    usage
+                    exit 1
+                    ;;
+            esac
             ;;
     esac
 done
@@ -129,8 +140,8 @@ else # Unknown
 fi
 
 # display formatted result
-printf "<txt>"
-printf "$(format ${BAT_PCT} xml ${COLOR_PCT})%%, "
-printf "$(format ${RATE} xml ${COLOR_RATE})W"
-printf "</txt>"
+[[ "${OPT_FORMAT}" == "xml" ]] && printf "<txt>"
+printf "$(format ${BAT_PCT} ${COLOR_PCT})%%, "
+printf "$(format ${RATE} ${COLOR_RATE})W"
+[[ "${OPT_FORMAT}" == "xml" ]] && printf "</txt>"
 [[ "${OPT_NO_NEWLINE}" == "false" ]] && printf "\n"
