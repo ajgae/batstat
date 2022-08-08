@@ -134,8 +134,6 @@ fi
 
 # then for {,dis}charge rate, add colors and sign NOTE: status can be
 # one of "Charging", "Discharging" or "Unknown"
-#
-# FIXME can also be "Full"
 if [[ "${CHARGE_OR_DISCHARGE}" == "Charging" ]]; then
     COLOR_RATE="green"
     RATE="+${RATE}" # add plus sign
@@ -149,6 +147,8 @@ elif [[ "${CHARGE_OR_DISCHARGE}" == "Discharging" ]]; then
         COLOR_RATE="red"
     fi
     RATE="-${RATE}" # add minus sign
+elif [[ "${CHARGE_OR_DISCHARGE}" == "Full" ]]; then
+    COLOR_RATE="green"
 else # Unknown
     COLOR_RATE="blue"
     RATE="?${RATE}" # indicate unknown status
