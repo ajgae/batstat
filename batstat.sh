@@ -28,7 +28,7 @@ function get_battery_info {
     fi
 }
 
-# $1 = string, $2 = color (one of 'red', 'green', 'brown' or 'blue')
+# $1 = string, $2 = color (one of 'red', 'green', 'orange' or 'blue')
 function format {
     local COLOR
     case "$2" in
@@ -40,9 +40,9 @@ function format {
             [[ "${OPT_FORMAT}" =~ "ansi" ]] && COLOR="\e[32m"
             [[ "${OPT_FORMAT}" =~ "xfce-genmon" ]] && COLOR="Green"
             ;;
-        brown)
+        orange)
             [[ "${OPT_FORMAT}" =~ "ansi" ]] && COLOR="\e[33m"
-            [[ "${OPT_FORMAT}" =~ "xfce-genmon" ]] && COLOR="Brown"
+            [[ "${OPT_FORMAT}" =~ "xfce-genmon" ]] && COLOR="Orange"
             ;;
         blue)
             [[ "${OPT_FORMAT}" =~ "ansi" ]] && COLOR="\e[34m"
@@ -127,9 +127,9 @@ RATE_INT=${RATE%.*} # keep only integer part (for comparisons)
 if [[ "${BAT_PCT_INT}" -lt "15" ]]; then
     COLOR_PCT="red"
 elif [[ "${BAT_PCT_INT}" -lt "30" ]]; then
-    COLOR_PCT="brown"  # brown
+    COLOR_PCT="orange"
 else
-    COLOR_PCT="green" # green
+    COLOR_PCT="green"
 fi
 
 # then for {,dis}charge rate, add colors and sign NOTE: status can be
@@ -141,8 +141,8 @@ elif [[ "${CHARGE_OR_DISCHARGE}" == "Discharging" ]]; then
     # add colors depending on how much drain there is on the battery
     if [[ "${RATE_INT}" -lt "7" ]]; then
         COLOR_RATE="green"
-    elif [[ "${RATE_INT}" -lt "10" ]]; then
-        COLOR_RATE="brown"
+    elif [[ "${RATE_INT}" -lt "12" ]]; then
+        COLOR_RATE="orange"
     else
         COLOR_RATE="red"
     fi
